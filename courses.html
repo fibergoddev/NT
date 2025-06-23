@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSpark - Modern Learning Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --primary-blue: #00008b;
+            --accent-red: #ff0000;
+            --dark-bg: #0a0a0a;
+            --pure-white: #ffffff;
+            --box-bg: rgba(255, 255, 255, 0.97);
+            --tag-hot: #ff4757;
+            --tag-new: #2ed573;
+            --price-green: #2ed573;
+            --header-height: 80px;
+            --nav-width: 320px;
+            --star-color: #FFD700;
+            --star-hover: #FFC107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', system-ui, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, var(--dark-bg), var(--primary-blue), #8b0000, var(--dark-bg));
+            background-size: 400% 400%;
+            animation: gradientFlow 20s ease infinite;
+            overflow-x: hidden;
+            color: var(--pure-white);
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Optimized Header */
+        header {
+            padding: 0 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: var(--header-height);
+            transition: height 0.4s ease;
+        }
+
+        header.scrolled {
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--pure-white);
+            gap: 0.8rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+            color: var(--accent-red);
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--pure-white);
+            text-transform: uppercase;
+        }
+
+        /* Optimized Menu Button */
+        .menu-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+            z-index: 1001;
+        }
+
+        .menu-btn span {
+            display: block;
+            width: 30px;
+            height: 2px;
+            background: var(--pure-white);
+            margin: 6px 0;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn.active span:first-child {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-btn.active span:last-child {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* Optimized Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: var(--nav-width);
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.98);
+            padding: 7rem 2rem 2rem;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 999;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: -15px 0 40px rgba(0, 0, 0, 0.6);
+            overflow-y: auto;
+        }
+
+        .nav-menu.active {
+            transform: translateX(-100%);
+        }
+
+        .nav-btn {
+            background: rgba(0, 0, 139, 0.3);
+            color: var(--pure-white);
+            padding: 1.3rem 1.8rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn i {
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-size: 1.3rem;
+            min-width: 26px;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 0, 0, 0.3);
+            transform: translateX(15px);
+        }
+
+        .nav-btn:hover i {
+            transform: rotate(20deg) scale(1.2);
+        }
+
+        /* Main Content Container */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            padding: calc(var(--header-height) + 2rem) 2rem 4rem;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Optimized Study Box */
+        .study-box {
+            background: var(--box-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        .study-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .study-box:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
+        }
+
+        .image-container {
+            width: 100%;
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .study-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 1s ease;
+        }
+
+        .study-box:hover img {
+            transform: scale(1.05);
+        }
+
+        .image-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: white;
+            z-index: 2;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .tag-hot {
+            background: var(--tag-hot);
+        }
+
+        .tag-new {
+            background: var(--tag-new);
+        }
+
+        .study-content {
+            padding: 2rem;
+        }
+
+        .course-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary-blue);
+            position: relative;
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        .course-title::after {
+            content: "";
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            width: 60px;
+            height: 5px;
+            background: var(--accent-red);
+            border-radius: 3px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-box {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #555;
+            font-size: 0.85rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .study-link {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-blue), #0000aa);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .study-link:hover {
+            background: linear-gradient(135deg, var(--accent-red), #cc0000);
+            transform: translateY(-5px);
+        }
+
+        .study-link i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .study-link:hover i {
+            transform: translateX(5px);
+        }
+
+        /* Optimized Footer */
+        footer {
+            padding: 6rem 2rem 3rem;
+            background: var(--dark-bg);
+            color: var(--pure-white);
+            text-align: center;
+            position: relative;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        footer.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 2.5rem;
+            color: var(--accent-red);
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        .footer-text {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+            font-family: 'Montserrat', sans-serif;
+            opacity: 0.9;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .social-link {
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            font-family: 'Montserrat', sans-serif;
+            margin-top: 3rem;
+        }
+
+        /* Optimized Floating Button */
+        .floating-telegram-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: linear-gradient(135deg, #0088cc, #006699);
+            color: var(--pure-white);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 20px 40px rgba(0, 136, 204, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .floating-telegram-btn:hover {
+            background: linear-gradient(135deg, #0077b3, #005580);
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        /* Optimized Cookie Consent */
+        .cookie-consent-box {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            right: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.97);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 9999;
+            transform: translateY(120%);
+            animation: cookieSlideUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            border: 1px solid rgba(0, 0, 139, 0.2);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+        }
+
+        .cookie-icon {
+            font-size: 40px;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+
+        .cookie-message {
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            font-size: 16px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .cookie-btn {
+            padding: 15px 35px;
+            background: linear-gradient(135deg, var(--primary-blue), #0000aa);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Montserrat', sans-serif;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cookie-btn:hover {
+            background: linear-gradient(135deg, var(--accent-red), #cc0000);
+            transform: translateY(-5px);
+        }
+
+        /* Feedback Modal */
+        .feedback-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .feedback-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .feedback-container {
+            background: var(--box-bg);
+            border-radius: 25px;
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            transform: scale(0.9);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 139, 0.2);
+        }
+
+        .feedback-modal.active .feedback-container {
+            transform: scale(1);
+        }
+
+        .feedback-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-close:hover {
+            color: var(--accent-red);
+            transform: rotate(90deg);
+        }
+
+        .feedback-icon {
+            font-size: 50px;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .feedback-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .feedback-subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .rating-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .rating-star {
+            font-size: 36px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .rating-star:hover,
+        .rating-star.active {
+            color: var(--star-color);
+            transform: scale(1.2);
+        }
+
+        .rating-star.hovered {
+            color: var(--star-hover);
+        }
+
+        .feedback-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            resize: none;
+            margin-bottom: 25px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-textarea:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 0, 139, 0.1);
+        }
+
+        .feedback-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-blue), #0000aa);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .feedback-submit:hover {
+            background: linear-gradient(135deg, var(--accent-red), #cc0000);
+            transform: translateY(-3px);
+        }
+
+        .feedback-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback-thankyou {
+            text-align: center;
+            display: none;
+        }
+
+        .feedback-thankyou .feedback-icon {
+            color: var(--tag-new);
+        }
+
+        .feedback-thankyou h2 {
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+
+        .feedback-thankyou p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes cookieSlideUp {
+            from { transform: translateY(120%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            :root {
+                --header-height: 75px;
+                --nav-width: 300px;
+            }
+            
+            header {
+                padding: 0 1.8rem;
+            }
+            
+            .floating-telegram-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 28px;
+                bottom: 30px;
+                right: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --header-height: 70px;
+                --nav-width: 280px;
+            }
+            
+            .container {
+                grid-template-columns: 1fr;
+                padding: calc(var(--header-height) + 1.5rem) 1.5rem 3rem;
+            }
+            
+            .floating-telegram-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 25px;
+                bottom: 25px;
+                right: 25px;
+            }
+            
+            .cookie-consent-box {
+                bottom: 30px;
+                left: 20px;
+                right: 20px;
+                padding: 20px;
+            }
+            
+            .feedback-container {
+                padding: 30px;
+            }
+            
+            .rating-star {
+                font-size: 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .floating-telegram-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 22px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .footer-text {
+                font-size: 1.1rem;
+            }
+            
+            .social-link {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+            
+            .cookie-consent-box {
+                bottom: 20px;
+                left: 15px;
+                right: 15px;
+                padding: 18px;
+            }
+            
+            .feedback-container {
+                padding: 25px;
+            }
+            
+            .feedback-title {
+                font-size: 20px;
+            }
+            
+            .feedback-subtitle {
+                font-size: 14px;
+            }
+            
+            .rating-star {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Optimized Header -->
+    <header id="mainHeader">
+        <a href="/" class="logo">
+            <i class="fas fa-book-open logo-icon"></i>
+            <h1 class="brand-name">EduSpark</h1>
+        </a>
+        <button class="menu-btn" aria-label="Navigation Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav-menu">
+            <button class="nav-btn" onclick="location.href='/'">
+                <i class="fas fa-home"></i>
+                Home
+            </button>
+            <button class="nav-btn" onclick="location.href='/courses'">
+                <i class="fas fa-graduation-cap"></i>
+                Courses
+            </button>
+            <button class="nav-btn" onclick="location.href='/enrolled'">
+                <i class="fas fa-user-graduate"></i>
+                My Courses
+            </button>
+            <button class="nav-btn" onclick="location.href='/books/mybooks'">
+                <i class="fas fa-book"></i>
+                My Books
+            </button>
+            <button class="nav-btn" onclick="location.href='/about'">
+                <i class="fas fa-info-circle"></i>
+                About
+            </button>
+            <button class="nav-btn" onclick="location.href='/contact'">
+                <i class="fas fa-envelope"></i>
+                Contact
+            </button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Study Box 1 - Mathematics -->
+        <article class="study-box">
+            <div class="image-container">
+                <div class="image-tag tag-hot">Special</div>
+                <img src="https://i.postimg.cc/Xv7WvG23/Picsart-25-04-13-08-29-39-498.jpg" alt="Mathematics Course">
+            </div>
+            <div class="study-content">
+                <h3 class="course-title">Premium Books Collection</h3>
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-value">200+</div>
+                        <div class="stat-label">Books</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">10th-12th</div>
+                        <div class="stat-label">Classes</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">HDR</div>
+                        <div class="stat-label">Quality</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Support</div>
+                    </div>
+                </div>
+                <a href="/books" class="study-link">
+                    Explore Books <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- Study Box 2 - Science -->
+        <article class="study-box">
+            <div class="image-container">
+                <div class="image-tag tag-hot">New</div>
+                <img src="https://i.postimg.cc/sDKv9vm5/Picsart-25-02-06-20-16-59-227.png" alt="Science Course">
+            </div>
+            <div class="study-content">
+                <h3 class="course-title">Next Topper Courses</h3>
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-value">15+</div>
+                        <div class="stat-label">Teachers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">10+</div>
+                        <div class="stat-label">Courses</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">1</div>
+                        <div class="stat-label">Language</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Support</div>
+                    </div>
+                </div>
+                <a href="http://RolexCoderZ.xyz/Course" class="study-link">
+                    Explore Courses <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- Study Box 3 - Telegram -->
+        <article class="study-box">
+            <div class="image-container">
+                <div class="image-tag tag-new">Telegram</div>
+                <img src="https://i.postimg.cc/DwcFFdPB/Picsart-25-04-13-08-28-50-641.jpg" alt="Telegram Community">
+            </div>
+            <div class="study-content">
+                <h3 class="course-title">Physics Wallah Courses</h3>
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-value">2,000+</div>
+                        <div class="stat-label">Teachers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">150+</div>
+                        <div class="stat-label">Courses</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">7+</div>
+                        <div class="stat-label">Languages</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Support</div>
+                    </div>
+                </div>
+                <a href="https://t.me/free_batches_of_pw" class="study-link" target="_blank">
+                    Join Community <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <p class="footer-text">Join thousands of students who have transformed their learning experience with EduSpark's innovative platform and premium courses.</p>
+            <div class="copyright">&copy; 2023 EduSpark. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Floating Telegram Button -->
+    <a href="https://t.me/+QwOjsdguMOxmZDZl" class="floating-telegram-btn" id="telegramBtn" target="_blank">
+        <i class="fab fa-telegram-plane"></i>
+    </a>
+
+    <!-- Cookie Consent Box -->
+    <div class="cookie-consent-box" id="cookieConsent">
+        <div class="cookie-icon">
+            <i class="fas fa-cookie-bite"></i>
+        </div>
+        <p class="cookie-message">
+            We use cookies to enhance your experience on EduSpark. By continuing to browse, 
+            you agree to our use of cookies. Learn more in our <a href="/cookies" style="color: var(--primary-blue); text-decoration: underline;">Cookie Policy</a>.
+        </p>
+        <button class="cookie-btn" id="acceptCookies">
+            <i class="fas fa-check"></i> Accept
+        </button>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div class="feedback-modal" id="feedbackModal">
+        <div class="feedback-container">
+            <button class="feedback-close" id="feedbackClose">&times;</button>
+            
+            <div class="feedback-form" id="feedbackForm">
+                <i class="fas fa-comment-alt feedback-icon"></i>
+                <h2 class="feedback-title">We'd Love Your Feedback!</h2>
+                <p class="feedback-subtitle">How would you rate your experience with EduSpark?</p>
+                
+                <div class="rating-container" id="ratingContainer">
+                    <i class="far fa-star rating-star" data-rating="1"></i>
+                    <i class="far fa-star rating-star" data-rating="2"></i>
+                    <i class="far fa-star rating-star" data-rating="3"></i>
+                    <i class="far fa-star rating-star" data-rating="4"></i>
+                    <i class="far fa-star rating-star" data-rating="5"></i>
+                </div>
+                
+                <textarea class="feedback-textarea" id="feedbackText" placeholder="What can we improve? (Optional)"></textarea>
+                
+                <button class="feedback-submit" id="feedbackSubmit" disabled>
+                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
+            </div>
+            
+            <div class="feedback-thankyou" id="feedbackThankyou">
+                <i class="fas fa-heart feedback-icon"></i>
+                <h2>Thank You!</h2>
+                <p>Your feedback helps us improve EduSpark for everyone.</p>
+                <button class="feedback-submit" id="feedbackDone">
+                    <i class="fas fa-check"></i> Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration (Replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsKPZDZyGqIqpGVXYUf4arljlI1Ynn3aM",
+            authDomain: "eduspark-feedback.firebaseapp.com",
+            databaseURL: "https://eduspark-feedback-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "eduspark-feedback",
+            storageBucket: "eduspark-feedback.appspot.com",
+            messagingSenderId: "777568861602",
+            appId: "1:777568861602:web:2caafd1482e51d88e386fb"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Optimized Menu Toggle
+        const menuBtn = document.querySelector('.menu-btn');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuBtn.addEventListener('click', () => {
+            menuBtn.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            
+            if (navMenu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-menu') && !e.target.closest('.menu-btn')) {
+                menuBtn.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Cookie Consent
+        document.addEventListener('DOMContentLoaded', function() {
+            const cookieConsent = document.getElementById('cookieConsent');
+            const acceptBtn = document.getElementById('acceptCookies');
+            
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+            
+            function setCookie(name, value, days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;SameSite=Lax`;
+            }
+            
+            if (!getCookie('cookieConsent')) {
+                setTimeout(() => {
+                    cookieConsent.style.display = 'flex';
+                    setTimeout(() => {
+                        cookieConsent.style.animation = 'cookieSlideUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+                    }, 50);
+                }, 3000);
+            }
+            
+            acceptBtn.addEventListener('click', function() {
+                setCookie('cookieConsent', 'accepted', 365);
+                cookieConsent.style.animation = 'cookieSlideUp 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) reverse forwards';
+                setTimeout(() => {
+                    cookieConsent.style.display = 'none';
+                }, 600);
+            });
+        });
+
+        // Scroll animations with Intersection Observer
+        const animateOnScroll = () => {
+            const studyBoxes = document.querySelectorAll('.study-box');
+            const footer = document.querySelector('footer');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.classList.contains('study-box')) {
+                            entry.target.classList.add('visible');
+                        } else if (entry.target === footer) {
+                            footer.classList.add('visible');
+                        }
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            studyBoxes.forEach(box => {
+                observer.observe(box);
+            });
+            observer.observe(footer);
+        };
+
+        // Feedback System
+        const initFeedbackSystem = () => {
+            const feedbackModal = document.getElementById('feedbackModal');
+            const feedbackClose = document.getElementById('feedbackClose');
+            const feedbackSubmit = document.getElementById('feedbackSubmit');
+            const feedbackDone = document.getElementById('feedbackDone');
+            const feedbackForm = document.getElementById('feedbackForm');
+            const feedbackThankyou = document.getElementById('feedbackThankyou');
+            const ratingContainer = document.getElementById('ratingContainer');
+            const feedbackText = document.getElementById('feedbackText');
+            
+            let selectedRating = 0;
+            let stars = [];
+            
+            // Check if feedback was already given today
+            const lastFeedbackDate = localStorage.getItem('lastFeedbackDate');
+            const today = new Date().toDateString();
+            
+            // Only show feedback if it wasn't shown today
+            if (lastFeedbackDate !== today) {
+                // Show feedback after 25 seconds
+                setTimeout(() => {
+                    feedbackModal.classList.add('active');
+                    
+                    // Initialize stars
+                    stars = Array.from(ratingContainer.querySelectorAll('.rating-star'));
+                    
+                    // Star hover effect
+                    stars.forEach(star => {
+                        star.addEventListener('mouseover', () => {
+                            const rating = parseInt(star.getAttribute('data-rating'));
+                            highlightStars(rating);
+                        });
+                        
+                        star.addEventListener('mouseout', () => {
+                            if (selectedRating === 0) {
+                                resetStars();
+                            } else {
+                                highlightStars(selectedRating);
+                            }
+                        });
+                        
+                        star.addEventListener('click', () => {
+                            selectedRating = parseInt(star.getAttribute('data-rating'));
+                            highlightStars(selectedRating);
+                            feedbackSubmit.disabled = false;
+                        });
+                    });
+                }, 10000); // 25 seconds
+            }
+            
+            // Highlight stars up to the given rating
+            function highlightStars(rating) {
+                stars.forEach(star => {
+                    const starRating = parseInt(star.getAttribute('data-rating'));
+                    if (starRating <= rating) {
+                        star.classList.add('hovered');
+                        star.classList.add('active');
+                        star.classList.remove('far');
+                        star.classList.add('fas');
+                    } else {
+                        star.classList.remove('hovered');
+                        star.classList.remove('active');
+                        star.classList.add('far');
+                        star.classList.remove('fas');
+                    }
+                });
+            }
+            
+            // Reset all stars to default state
+            function resetStars() {
+                stars.forEach(star => {
+                    star.classList.remove('hovered');
+                    star.classList.remove('active');
+                    star.classList.add('far');
+                    star.classList.remove('fas');
+                });
+            }
+            
+            // Close modal
+            feedbackClose.addEventListener('click', () => {
+                feedbackModal.classList.remove('active');
+            });
+            
+            // Submit feedback
+            feedbackSubmit.addEventListener('click', () => {
+                const feedback = feedbackText.value.trim();
+                const timestamp = new Date().toISOString();
+                
+                // Save to Firebase
+                const feedbackRef = database.ref('feedback').push();
+                feedbackRef.set({
+                    rating: selectedRating,
+                    feedback: feedback,
+                    timestamp: timestamp,
+                    pageUrl: window.location.href
+                }).then(() => {
+                    // Show thank you message
+                    feedbackForm.style.display = 'none';
+                    feedbackThankyou.style.display = 'block';
+                    
+                    // Remember feedback was given today
+                    localStorage.setItem('lastFeedbackDate', today);
+                }).catch(error => {
+                    console.error('Error saving feedback:', error);
+                    alert('There was an error submitting your feedback. Please try again.');
+                });
+            });
+            
+            // Close after thank you
+            feedbackDone.addEventListener('click', () => {
+                feedbackModal.classList.remove('active');
+                // Reset form for next time
+                setTimeout(() => {
+                    feedbackForm.style.display = 'block';
+                    feedbackThankyou.style.display = 'none';
+                    resetStars();
+                    feedbackText.value = '';
+                    selectedRating = 0;
+                    feedbackSubmit.disabled = true;
+                }, 300);
+            });
+        };
+
+        // Initialize animations when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            animateOnScroll();
+            initFeedbackSystem();
+            
+            // Add header scroll effect
+            const header = document.getElementById('mainHeader');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }, { passive: true });
+        });
+    </script>
+</body>
+</html>

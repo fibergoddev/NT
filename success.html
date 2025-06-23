@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success! | Study World</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.cdnfonts.com/css/lemon-milk" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/integralcf" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #00008b;
+            --accent-red: #ff0000;
+            --dark-bg: #0a0a0a;
+            --pure-white: #ffffff;
+            --box-bg: rgba(255, 255, 255, 0.97);
+            --success-green: #2ed573;
+            --header-height: 80px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', system-ui, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, var(--dark-bg), var(--accent-red), var(--dark-bg), var(--accent-red));
+            background-size: 400% 400%;
+            animation: gradientFlow 12s ease infinite;
+            overflow-x: hidden;
+            color: var(--pure-white);
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        header {
+            padding: 0 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: var(--header-height);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--pure-white);
+            gap: 0.8rem;
+            text-decoration: none;
+        }
+        .logo-icon {
+            font-size: 2.2rem;
+            color: var(--accent-red);
+        }
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: 'Lemon Milk', sans-serif;
+            text-transform: uppercase;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: var(--header-height);
+            text-align: center;
+        }
+        .success-container {
+            background: var(--box-bg);
+            color: var(--dark-bg);
+            padding: 4rem;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            transform: scale(0.9);
+            opacity: 0;
+            animation: popIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes popIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: var(--success-green);
+            animation: pulseIcon 2s infinite;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .success-title {
+            font-family: 'Lemon Milk', sans-serif;
+            font-size: 2.5rem;
+            margin: 1.5rem 0;
+            color: var(--primary-blue);
+        }
+        .success-message {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .redirect-message {
+            font-size: 1rem;
+            color: #555;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .redirect-message span {
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="main.html" class="logo">
+            <i class="fas fa-book-open logo-icon"></i>
+            <h1 class="brand-name">STUDY-WORLD</h1>
+        </a>
+    </header>
+
+    <main class="main-content">
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="success-title">Key Generated!</h2>
+            <p class="success-message">
+                You have successfully generated your access key. You can now access our premium content.
+            </p>
+            <p class="redirect-message">
+                Redirecting to the main page in <span id="countdown">5</span> seconds...
+            </p>
+        </div>
+    </main>
+
+    <script>
+        const countdownElement = document.getElementById('countdown');
+        let seconds = 5;
+
+        const interval = setInterval(() => {
+            seconds--;
+            countdownElement.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = 'main.html';
+            }
+        }, 1000);
+    </script>
+</body>
+</html> 
