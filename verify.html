@@ -426,9 +426,9 @@
    function checkCookie() {
       // Check for any of the possible valid cookies
       const validCookies = [
-        '24key',
-        '48Key',
-        '72key',
+        'server02KeyGenerated',
+        'server03KeyGenerated',
+        'recommendServerKeyGenerated',
         'server_1_success',
         'server_2_success',
         'server_3_success'
@@ -495,9 +495,7 @@
           
           // Redirect to PDF (replace with your actual URL)
           setTimeout(() => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get('redirectUrl');
-            window.location.href = redirectUrl || "main.html";
+            window.location.href = "your-pdf-file.pdf";
           }, 1000);
         }
       }

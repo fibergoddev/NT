@@ -425,7 +425,7 @@
   <header>
     <div class="logo">
       <i class="fas fa-book-open logo-icon"></i>
-      <h1 class="brand-name">STUDY-WORLD</h1>
+      <h1 class="brand-name">Study-World</h1>
     </div>
     <button class="menu-btn" aria-label="Navigation Menu">
       <span></span>
@@ -433,19 +433,19 @@
       <span></span>
     </button>
     <nav class="nav-menu">
-      <button class="nav-btn" onclick="location.href='#'">
+      <button class="nav-btn" onclick="location.href='index.html'">
         <i class="fas fa-home"></i>
         Home
       </button>
-      <button class="nav-btn" onclick="location.href='#'">
+      <button class="nav-btn" onclick="location.href='courses.html'">
         <i class="fas fa-graduation-cap"></i>
         Courses
       </button>
-      <button class="nav-btn" onclick="location.href='#'">
+      <button class="nav-btn" onclick="location.href='about.html'">
         <i class="fas fa-info-circle"></i>
         About
       </button>
-      <button class="nav-btn" onclick="location.href='#'">
+      <button class="nav-btn" onclick="location.href='contact.html'">
         <i class="fas fa-envelope"></i>
         Contact
       </button>
@@ -457,10 +457,10 @@
     <div class="duration-box"><i class="fas fa-clock"></i> Duration: 6 Hours</div>
     <p>Generate Key to Use Our Premium Resources</p>
     
-    <button id="server01" class="button">
+    <button id="server02" class="button">
       <i class="fas fa-bolt"></i> SERVER 01
     </button>
-    <button id="server02" class="button">
+    <button id="server03Url" class="button">
       <i class="fas fa-rocket"></i> SERVER 02
     </button>
     <button id="recommendServer" class="button">
@@ -589,17 +589,14 @@
     });
 
     const urls = {
-      server01: 'https://linkcents.com/KDaa',
-      server02: 'https://linkcents.com/KDaa',
-      recommendServer: 'https://linkcents.com/KDaa',
-      tutorialVideo: '#'
+      server02: 'https://reel2earn.com/1t0cKI',
+      server03: 'https://reel2earn.com/1t0cKI',
+      recommendServer: 'https://reel2earn.com/1t0cKI',
+      tutorialVideo: 'https://reel2earn.com/1t0cKI'
     };
 
-    function redirectToProvider(url) {
-      if (!url) {
-        alert('Invalid URL!');
-        return;
-      }
+    function setTemporaryCookieAndRedirect(cookieName, url) {
+      if (!url) return alert('Invalid URL!');
       
       const loadingMessage = document.getElementById("loadingMessage");
       loadingMessage.style.display = "block";
@@ -607,22 +604,23 @@
       // Create particle burst effect
       particles.burst(15);
       
-      // A short delay to show the "generating access..." message before redirecting.
       setTimeout(() => {
-        window.location.href = url; // Redirect in the same tab
-      }, 1500);
+        document.cookie = `${cookieName}=true; path=/; max-age=${2 * 60 * 60}`;
+        window.open(url, '_blank');
+        loadingMessage.style.display = "none";
+      }, 2000);
     }
 
-    document.getElementById('server01').addEventListener('click', () => {
-      redirectToProvider(urls.server01);
+    document.getElementById('server02').addEventListener('click', () => {
+      setTemporaryCookieAndRedirect('24key', urls.server02);
     });
 
-    document.getElementById('server02').addEventListener('click', () => {
-      redirectToProvider(urls.server02);
+    document.getElementById('server03Url').addEventListener('click', () => {
+      setTemporaryCookieAndRedirect('48Key', urls.server03);
     });
 
     document.getElementById('recommendServer').addEventListener('click', () => {
-      redirectToProvider(urls.recommendServer);
+      setTemporaryCookieAndRedirect('72key', urls.recommendServer);
     });
 
     document.getElementById('watchVideo').addEventListener('click', () => {
