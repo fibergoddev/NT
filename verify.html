@@ -346,8 +346,7 @@
       font-weight: 600;
       margin-bottom: 2rem;
     }
-    }
-
+  }
     /* Prevent Navigation */
     history.pushState(null, null, location.href);
     window.onpopstate = function() {
@@ -426,12 +425,9 @@
    function checkCookie() {
       // Check for any of the possible valid cookies
       const validCookies = [
-        'server02KeyGenerated',
-        'server03KeyGenerated',
-        'recommendServerKeyGenerated',
-        'server_1_success',
-        'server_2_success',
-        'server_3_success'
+        '24key',
+        '48Key',
+        '72key'
       ];
       
       // Check if any valid cookie exists
@@ -495,7 +491,7 @@
           
           // Redirect to PDF (replace with your actual URL)
           setTimeout(() => {
-            window.location.href = "your-pdf-file.pdf";
+            window.location.href = "index.html";
           }, 1000);
         }
       }

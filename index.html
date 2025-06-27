@@ -1454,6 +1454,21 @@
                 window.location.replace('success.html');
                 return; // Stop further script execution on this page
             }
+
+            // Button protection: check for key cookie on any button click
+            function hasValidKey() {
+                const keyNames = ['24key', '48Key', '72key'];
+                return keyNames.some(name => document.cookie.split('; ').some(c => c.startsWith(name + '=')));
+            }
+
+            document.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!hasValidKey()) {
+                        e.preventDefault();
+                        window.location.href = 'login.html';
+                    }
+                });
+            });
         });
 
         function navigateTo(url) {
