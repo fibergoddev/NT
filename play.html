@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study-World | Video Player</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root {
+      --primary: #0d47a1; /* Deeper, more professional blue */
+      --accent: #d32f2f; /* Deeper red */
+      --bg-dark: #0a0a0f;
+      --bg-glass: rgba(10, 10, 20, 0.6);
+      --white: #f5f5f5;
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      --border: rgba(255, 255, 255, 0.1);
+      --footer-glow: 0 0 16px var(--primary), 0 0 32px var(--accent);
+      --outline-glow: 0 0 0 2px #0d47a1, 0 0 12px 2px #0d47a144;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html {
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden; /* Prevent horizontal scroll globally */
+    }
+    body {
+      min-height: 100%;
+      width: 100%;
+      background: linear-gradient(135deg, #000018 0%, #0a0a1a 100%);
+      color: var(--white);
+      font-family: 'Poppins', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      animation: fadeInBg 1.2s;
+      overflow-x: hidden;
+    }
+    @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+
+    .site-header {
+      width: 100%;
+      background: var(--bg-glass);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      padding: 1.2rem clamp(1rem, 4vw, 2.5rem);
+      box-shadow: 0 6px 32px 0 rgba(13,71,161,0.10), 0 1.5px 0 0 var(--primary);
+      z-index: 10;
+      animation: fadeInDown 1s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      min-height: 64px;
+    }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      text-decoration: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      color: var(--white);
+      position: relative;
+      font-weight: 700;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .logo i {
+      color: var(--primary);
+      font-size: 2.2rem;
+      animation: logoPop 1.2s;
+    }
+    .logo::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s cubic-bezier(.4,1.6,.6,1);
+    }
+    .logo:hover::after {
+      transform: scaleX(1);
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(13,71,161,0.08);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-left: 1rem;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 3px;
+      background: var(--white);
+      margin: 3px 0;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    .hamburger:active, .hamburger:focus {
+      background: rgba(211,47,47,0.12);
+    }
+    @media (max-width: 700px) {
+      .site-header {
+        padding: 0.7rem 1vw;
+        min-height: 54px;
+      }
+      .logo {
+        font-size: 1.3rem;
+      }
+      .hamburger {
+        display: flex;
+      }
+    }
+
+    .player-main {
+      flex: 1;
+      width: 100%;
+      padding: clamp(1rem, 4vh, 2rem) clamp(1rem, 4vw, 2.5rem);
+      animation: fadeInUp 1.2s;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .player-area {
+      display: flex;
+      flex-direction: row;
+      gap: clamp(1rem, 4vw, 2rem);
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    @media (max-width: 1024px) { .player-area { flex-direction: column; align-items: center; } }
+    .video-card {
+      background: var(--bg-glass);
+      border-radius: 22px;
+      box-shadow: var(--shadow), var(--outline-glow);
+      border: 1.5px solid var(--border);
+      padding: 1.2rem;
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: cardPulse 3s infinite alternate;
+    }
+    @keyframes cardPulse {
+      0% { box-shadow: var(--shadow), 0 0 0 2px #0d47a1, 0 0 12px 2px #0d47a144; }
+      100% { box-shadow: var(--shadow), 0 0 0 3px #d32f2f, 0 0 18px 4px #d32f2f33; }
+    }
+    .video-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      color: var(--primary);
+      margin-bottom: 1rem;
+      text-align: center;
+      word-break: break-all;
+    }
+    .video-wrapper {
+      width: 100%;
+      max-width: 700px;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #video-player {
+      width: 100%;
+      height: auto;
+      max-height: 60vw;
+      min-height: 180px;
+      background: #000;
+      border-radius: 16px;
+      display: block;
+    }
+    .video-controls {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .speed-control {
+      background: var(--bg-glass);
+      color: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.7rem;
+      font-size: 1rem;
+      margin-left: 0.5rem;
+    }
+    .video-description {
+      color: #c7c7d9;
+      font-size: 1rem;
+      margin-top: 1rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar {
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 400px;
+    }
+    @media (min-width: 1025px) { .sidebar { width: 380px; } }
+    
+    /* Tab Styles */
+    .tabs-container {
+      background: var(--bg-glass);
+      border-radius: 18px;
+      box-shadow: var(--shadow), var(--outline-glow);
+      border: 1.5px solid var(--border);
+      padding: 1rem;
+      animation: cardPulse 3s infinite alternate;
+    }
+    .tab-buttons {
+      display: flex;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #a0a0b0;
+      padding: 0.8rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      transition: color 0.3s;
+    }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--white); }
+    .tab-indicator {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background-color: var(--primary);
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .tab-panel { display: none; padding-top: 1rem; }
+    .tab-panel.active { display: block; animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #bookmark-list, #notes-panel {
+      color: #e0e0e0;
+      padding: 0.5rem 0;
+      min-height: 80px;
+      font-size: 1rem;
+    }
+    .bookmark-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .bookmark-item:last-child { border-bottom: none; }
+    .bookmark-time {
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .bookmark-time:hover {
+      color: var(--accent);
+    }
+    .bookmark-delete {
+      color: var(--accent);
+      cursor: pointer;
+    }
+    .bookmark-delete:hover {
+      transform: scale(1.2);
+    }
+    #notes-textarea {
+      width: 100%;
+      height: 100px;
+      background: rgba(10,10,20,0.8);
+      border: 1px solid var(--border);
+      color: var(--white);
+      border-radius: 8px;
+      padding: 0.8rem;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    .notes-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.7rem;
+      flex-wrap: wrap;
+    }
+    .action-button {
+      flex: 1 1 120px;
+      min-width: 120px;
+      padding: 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--white);
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      background-size: 200% 100%;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-position 0.4s, transform 0.2s, box-shadow 0.4s;
+    }
+    .action-button:hover {
+      background-position: 100% 0;
+      transform: scale(1.04);
+      box-shadow: 0 4px 24px #ff4757aa;
+    }
+
+    /* Footer */
+    .site-footer {
+      width: 100%;
+      padding: 2rem 0 1.2rem 0;
+      margin-top: 2rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      background: var(--bg-glass);
+      box-shadow: 0 0 24px 0 #0d47a1cc, 0 0 32px 0 #d32f2fcc;
+      position: relative;
+      z-index: 2;
+      animation: fadeInUp 1.2s 0.7s backwards;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .footer-logo {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.7rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+      animation: logoPop 1.2s 0.2s backwards;
+    }
+    .footer-logo i { color: var(--accent); font-size: 1.7rem; }
+    .footer-anim {
+      width: 70px;
+      height: 4px;
+      margin: 0.5rem auto 1rem auto;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      animation: footerGlow 2s infinite alternate;
+    }
+    @keyframes footerGlow {
+      0% { box-shadow: 0 0 8px var(--primary); }
+      100% { box-shadow: 0 0 16px var(--accent); }
+    }
+    .footer-socials {
+      display: flex;
+      gap: 1.2rem;
+      margin: 0.7rem 0 0.2rem 0;
+      justify-content: center;
+    }
+    .footer-socials a {
+      color: #b0b0c0;
+      font-size: 1.3rem;
+      transition: color 0.3s, transform 0.2s;
+      border-radius: 50%;
+      padding: 0.3rem;
+    }
+    .footer-socials a:hover {
+      color: var(--primary);
+      background: rgba(13,71,161,0.08);
+      transform: scale(1.15);
+    }
+    .footer-powered {
+      margin-top: 0.7rem;
+      font-size: 1rem;
+      color: #c7c7d9;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 700px) {
+      .site-footer { font-size: 1rem; padding: 1.2rem 0 0.7rem 0; }
+      .footer-logo { font-size: 1.2rem; }
+      .footer-logo i { font-size: 1.2rem; }
+      .footer-anim { width: 40px; height: 3px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="#" class="logo"><i class="fas fa-book-open"></i> Study-World</a>
+    <button class="hamburger" aria-label="Menu" tabindex="0">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+  <main class="player-main">
+    <div class="player-area">
+      <div class="video-card">
+        <div class="video-title" id="video-title">Loading Video...</div>
+        <div class="video-wrapper">
+          <video id="video-player" controls poster="https://studyworld-static.s3.amazonaws.com/poster.png"></video>
+        </div>
+        <div class="video-controls">
+          <label for="speed-control" style="color:#b0b0c0;font-size:0.95rem;">Speed:</label>
+          <select id="speed-control" class="speed-control">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+        <div class="video-description">
+          Welcome to your learning journey. Use the bookmarks and notes to save important moments.
+        </div>
+      </div>
+      <aside class="sidebar">
+        <div class="tabs-container">
+          <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="bookmarks"><i class="fas fa-bookmark"></i> Bookmarks</button>
+            <button class="tab-btn" data-tab="notes"><i class="fas fa-edit"></i> Notes</button>
+            <div class="tab-indicator"></div>
+          </div>
+          <div class="tab-content">
+            <div id="bookmarks-panel" class="tab-panel active">
+              <div id="bookmark-list">
+                <p>No bookmarks yet. Click "Add Bookmark" to save your current position.</p>
+              </div>
+              <button id="add-bookmark-btn" class="action-button"><i class="fas fa-plus"></i> Add Bookmark</button>
+            </div>
+            <div id="notes-panel" class="tab-panel">
+              <textarea id="notes-textarea" placeholder="Write your notes for this video here..."></textarea>
+              <div class="notes-actions">
+                <button id="save-notes-btn" class="action-button"><i class="fas fa-save"></i> Save Notes</button>
+                <button id="download-notes-btn" class="action-button"><i class="fas fa-download"></i> Download</button>
+                <button id="copy-notes-btn" class="action-button"><i class="fas fa-copy"></i> Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-logo"><i class="fas fa-book-open"></i> Study-World</div>
+    <div class="footer-anim"></div>
+    <div class="footer-socials">
+      <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+      <a href="#" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+      <a href="#" title="Email"><i class="fas fa-envelope"></i></a>
+    </div>
+    <div class="footer-powered">Powering your learning experience with cutting-edge video technology.</div>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const video = document.getElementById('video-player');
+      const videoTitleElement = document.getElementById('video-title');
+      let currentLessonUrl = '';
+
+      // --- TABS ---
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabPanels = document.querySelectorAll('.tab-panel');
+      const tabIndicator = document.querySelector('.tab-indicator');
+      function updateIndicator(el) {
+        tabIndicator.style.width = `${el.offsetWidth}px`;
+        tabIndicator.style.transform = `translateX(${el.offsetLeft}px)`;
+      }
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          updateIndicator(button);
+          tabPanels.forEach(panel => panel.classList.remove('active'));
+          document.getElementById(`${button.dataset.tab}-panel`).classList.add('active');
+        });
+      });
+      updateIndicator(document.querySelector('.tab-btn.active'));
+
+      // --- VIDEO LOADING ---
+      function extractM3U8(url) {
+        let decoded = decodeURIComponent(url);
+        // Recursively extract lessonurl if present
+        let match = decoded.match(/lessonurl=([^&]+)/);
+        while (match) {
+          decoded = decodeURIComponent(match[1]);
+          match = decoded.match(/lessonurl=([^&]+)/);
+        }
+        return decoded;
+      }
+      function loadVideo() {
+        const params = new URLSearchParams(window.location.search);
+        let url = params.get('lessonurl');
+        if (url) {
+          // Extract the innermost m3u8 link
+          url = extractM3U8(url);
+          currentLessonUrl = url;
+          let title = decodeURIComponent(url.split('/').pop().split('.').slice(0, -1).join('.') || 'Video Lesson');
+          videoTitleElement.textContent = title;
+          if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(video);
+          } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
+          }
+        } else {
+          videoTitleElement.textContent = 'No Video Source Found!';
+          video.style.display = 'none';
+        }
+      }
+
+      // --- PLAYBACK SPEED ---
+      const speedControl = document.getElementById('speed-control');
+      speedControl.addEventListener('change', function() {
+        video.playbackRate = parseFloat(this.value);
+      });
+
+      // --- BOOKMARKS ---
+      const addBookmarkBtn = document.getElementById('add-bookmark-btn');
+      const bookmarkList = document.getElementById('bookmark-list');
+      function getBookmarks() {
+        if (!currentLessonUrl) return [];
+        return JSON.parse(localStorage.getItem(`bookmarks_${currentLessonUrl}`)) || [];
+      }
+      function saveBookmarks(bookmarks) {
+        if (!currentLessonUrl) return;
+        localStorage.setItem(`bookmarks_${currentLessonUrl}`, JSON.stringify(bookmarks));
+      }
+      function renderBookmarks() {
+        const bookmarks = getBookmarks();
+        bookmarkList.innerHTML = '';
+        if (bookmarks.length === 0) {
+          bookmarkList.innerHTML = '<p>No bookmarks yet.</p>';
+          return;
+        }
+        bookmarks.sort((a, b) => a.time - b.time).forEach(bookmark => {
+          const bookmarkEl = document.createElement('div');
+          bookmarkEl.className = 'bookmark-item';
+          const time = new Date(bookmark.time * 1000).toISOString().substr(14, 5);
+          bookmarkEl.innerHTML = `<span class="bookmark-time">${time}</span><i class="fas fa-trash bookmark-delete"></i>`;
+          bookmarkEl.querySelector('.bookmark-time').addEventListener('click', () => {
+            video.currentTime = bookmark.time;
+            video.play();
+          });
+          bookmarkEl.querySelector('.bookmark-delete').addEventListener('click', () => {
+            saveBookmarks(bookmarks.filter(b => b.time !== bookmark.time));
+            renderBookmarks();
+          });
+          bookmarkList.appendChild(bookmarkEl);
+        });
+      }
+      addBookmarkBtn.addEventListener('click', () => {
+        const currentTime = Math.floor(video.currentTime);
+        const bookmarks = getBookmarks();
+        if (!bookmarks.some(b => b.time === currentTime)) {
+          bookmarks.push({ time: currentTime });
+          saveBookmarks(bookmarks);
+          renderBookmarks();
+        } else {
+          alert('Bookmark already exists at this time!');
+        }
+      });
+
+      // --- NOTES ---
+      const notesTextarea = document.getElementById('notes-textarea');
+      const saveNotesBtn = document.getElementById('save-notes-btn');
+      const downloadNotesBtn = document.getElementById('download-notes-btn');
+      const copyNotesBtn = document.getElementById('copy-notes-btn');
+      function loadNotes() {
+        if (!currentLessonUrl) return;
+        notesTextarea.value = localStorage.getItem(`notes_${currentLessonUrl}`) || '';
+      }
+      function saveNotes() {
+        if (!currentLessonUrl) return;
+        localStorage.setItem(`notes_${currentLessonUrl}`, notesTextarea.value);
+        saveNotesBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+        setTimeout(() => { saveNotesBtn.innerHTML = '<i class="fas fa-save"></i> Save Notes'; }, 2000);
+      }
+      saveNotesBtn.addEventListener('click', saveNotes);
+      downloadNotesBtn.addEventListener('click', () => {
+        const blob = new Blob([notesTextarea.value], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (videoTitleElement.textContent || 'notes') + '.txt';
+        a.click();
+      });
+      copyNotesBtn.addEventListener('click', () => {
+        notesTextarea.select();
+        document.execCommand('copy');
+        copyNotesBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => { copyNotesBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+      });
+      
+      // --- INITIAL LOAD ---
+      loadVideo();
+      renderBookmarks();
+      loadNotes();
+    });
+  </script>
+</body>
+</html> 

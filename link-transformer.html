@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study-World | m3u8 Link Transformer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #000018 0%, #0a0a1a 100%);
+      color: #fff;
+      font-family: 'Poppins', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1rem;
+    }
+    .container {
+      background: rgba(20, 22, 40, 0.85);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeInUp 1s;
+    }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    .logo {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0d47a1;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.5rem;
+    }
+    .logo i { color: #d32f2f; font-size: 2.2rem; }
+    label {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #b0b0c0;
+      align-self: flex-start;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #222a;
+      background: #181a2a;
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus {
+      border: 1.5px solid #0d47a1;
+    }
+    .transform-btn {
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(90deg, #0d47a1 0%, #d32f2f 100%);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 1.2rem;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 2px 12px #0004;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+    }
+    .transform-btn:hover {
+      background: linear-gradient(90deg, #d32f2f 0%, #0d47a1 100%);
+      transform: scale(1.04);
+    }
+    .output-section {
+      width: 100%;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .output-link {
+      width: 100%;
+      background: #181a2a;
+      color: #0d47a1;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      font-size: 1rem;
+      word-break: break-all;
+      border: 1.5px solid #222a;
+      margin-bottom: 0.2rem;
+      text-align: left;
+    }
+    .copy-btn {
+      background: linear-gradient(90deg, #0d47a1 0%, #d32f2f 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .copy-btn:hover {
+      background: linear-gradient(90deg, #d32f2f 0%, #0d47a1 100%);
+      transform: scale(1.04);
+    }
+    @media (max-width: 500px) {
+      .container { padding: 1.2rem 0.5rem; }
+      .logo { font-size: 1.3rem; }
+      .output-link { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><i class="fas fa-book-open"></i> Study-World</div>
+    <label for="m3u8-input">Paste your m3u8 link below:</label>
+    <input type="text" id="m3u8-input" placeholder="https://example.com/stream.m3u8">
+    <div style="display: flex; width: 100%; gap: 0.5rem; margin-bottom: 1.2rem;">
+      <button class="transform-btn" id="transform-btn" style="flex:1;"><i class="fas fa-magic"></i> Transform Link</button>
+      <button class="transform-btn" id="reset-btn" style="flex:1; background:linear-gradient(90deg,#d32f2f 0%,#0d47a1 100%);"><i class="fas fa-undo"></i> Reset</button>
+    </div>
+    <div class="output-section" id="output-section" style="display:none;">
+      <div class="output-link" id="output-link"></div>
+      <button class="copy-btn" id="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+    </div>
+  </div>
+  <script>
+    const input = document.getElementById('m3u8-input');
+    const transformBtn = document.getElementById('transform-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const outputSection = document.getElementById('output-section');
+    const outputLink = document.getElementById('output-link');
+    const copyBtn = document.getElementById('copy-btn');
+
+    function transformLink() {
+      const link = input.value.trim();
+      if (!link || !link.includes('.m3u8')) {
+        outputLink.textContent = 'Please enter a valid m3u8 link.';
+        outputSection.style.display = 'flex';
+        return;
+      }
+      const transformed = `play.html?lessonurl=${encodeURIComponent(link)}`;
+      outputLink.textContent = transformed;
+      outputSection.style.display = 'flex';
+    }
+
+    transformBtn.addEventListener('click', transformLink);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        transformLink();
+      }
+      if (e.key === ' ' && outputLink.textContent && !outputLink.textContent.startsWith('Please enter')) {
+        e.preventDefault();
+        navigator.clipboard.writeText(outputLink.textContent);
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 1800);
+      }
+    });
+    resetBtn.addEventListener('click', () => {
+      input.value = '';
+      outputLink.textContent = '';
+      outputSection.style.display = 'none';
+      input.focus();
+    });
+    copyBtn.addEventListener('click', () => {
+      const text = outputLink.textContent;
+      if (!text || text.startsWith('Please enter')) return;
+      navigator.clipboard.writeText(text);
+      copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 1800);
+    });
+  </script>
+</body>
+</html> 
