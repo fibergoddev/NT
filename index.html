@@ -1440,37 +1440,8 @@
     </div>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const keyGenerated = urlParams.get('key_generated');
-
-            // This parameter is added to the URL by the key generation provider on successful return.
-            if (keyGenerated === 'true') {
-                // 1. Set the access cookie. We use a generic name since verify.html checks for any valid key.
-                document.cookie = `server_1_success=true; path=/; max-age=${6 * 60 * 60}`; 
-                
-                // 2. Redirect to the success page, replacing the current history entry
-                // to prevent the user from getting stuck in a loop by pressing the back button.
-                window.location.replace('success.html');
-                return; // Stop further script execution on this page
-            }
-
-            // Button protection: check for key cookie on any button click
-            function hasValidKey() {
-                const keyNames = ['24key', '48Key', '72key'];
-                return keyNames.some(name => document.cookie.split('; ').some(c => c.startsWith(name + '=')));
-            }
-
-            document.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    if (!hasValidKey()) {
-                        e.preventDefault();
-                        window.location.href = 'login.html';
-                    }
-                });
-            });
-        });
-
+        // Removed server function and key generation logic as per user request.
+        
         function navigateTo(url) {
             if (url.startsWith('#')) {
                 // It's an anchor link, just scroll to it.
