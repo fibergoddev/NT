@@ -1,5 +1,5 @@
 // YouTube API Configuration - UPDATED
-const API_KEY = 'AIzaSyBOti4mM-6x9WDnDiYxQ3pX[...]'; // Replace with your actual API key
+const API_KEY = 'AIzaSyAtDD_g-O06B66u7OuMxSJ_JcK8O2q_ytU'; // Replace with your actual API key
 const API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 // Global Variables
